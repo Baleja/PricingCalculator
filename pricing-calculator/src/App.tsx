@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
+// Constants
+const EXCLUSIVITY_RATES: { [key: string]: number } = {
+  'none': 0,
+  '30-day': 0.1,
+  '90-day': 0.2,
+  '180-day': 0.3,
+  '365-day': 0.5
+};
+
 function App() {
   // State management
   const [followerCount, setFollowerCount] = useState<number>(50000);
@@ -54,142 +63,44 @@ function App() {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
-      <div className="mx-auto p-6 max-w-3xl bg-white">
-        <h1 className="text-3xl font-light text-gray-800 mb-6">Influencer Pricing Calculator</h1>
+    <div className="bg-gray-100 min-h-screen py-8">
+      <div className="mx-auto p-6 max-w-3xl bg-white rounded-lg shadow-sm">
+        <h1 className="text-4xl font-light text-gray-800 mb-6">Influencer Pricing Calculator</h1>
         
         {/* Welcome message */}
-        <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
-          <p className="text-sm text-gray-700">
-            Welcome to the Universal Influencer Pricing Calculator 3.0, used for estimating fair compensation for influencer marketing.
+        <div className="mb-8 p-4 bg-blue-50 rounded-lg">
+          <p className="text-gray-700">
+            Welcome to the Universal Influencer Pricing Calculator 3.0, used for estimating fair compensation for influencer marketing. It will allow you to calculate the appropriate pricing based on multiple factors, with a clear breakdown of costs. These calculations are based on standardized cause-based marketing evaluations, with a quality rating system that ensures you're paying appropriate rates based on engagement, authenticity, and content relevance. Please keep in mind they are only estimates, and we cannot be held responsible for any variations you may find when executing campaigns in the real world.
           </p>
         </div>
 
         {/* Creator Analysis Section */}
-        <div className="mb-8 border p-6 rounded-lg bg-indigo-50">
+        <div className="mb-8 p-6 bg-indigo-50 rounded-lg">
           <h2 className="text-2xl font-light mb-4">Creator Analysis</h2>
           
-          {/* Handle Input */}
           <div className="mb-6">
             <label className="block text-gray-700 mb-2">Enter Instagram Handle (@username)</label>
-            <div className="flex">
-              <span className="inline-flex items-center px-4 bg-gray-200 text-gray-600 border border-r-0 border-gray-300 rounded-l-md text-lg">@</span>
-              <input
-                type="text"
-                value={creatorHandle}
-                onChange={(e) => setCreatorHandle(e.target.value)}
-                placeholder="username"
-                className="flex-1 p-3 border border-gray-300 rounded-r text-lg"
-              />
-            </div>
-            <button
-              onClick={analyzeCreator}
-              disabled={isAnalyzing}
-              className="mt-4 px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
-            >
-              {isAnalyzing ? 'Analyzing...' : 'Analyze Creator'}
-            </button>
-          </div>
-
-          {/* API Integration Notice */}
-          <div className="mb-6 p-4 bg-blue-100 rounded-lg flex items-start space-x-3">
-            <span className="text-blue-500">ℹ️</span>
-            <div>
-              <span className="font-medium text-blue-700">API Integration:</span>
-              <span className="text-blue-700"> In production, this tool would connect to the Influencer Club API or similar service to pull real-time influencer data. Currently showing simulated data for demonstration purposes. </span>
-              <a href="#" className="text-blue-600 hover:text-blue-800 underline">Learn more about API setup</a>
+            <div className="flex gap-4">
+              <div className="flex-1 flex">
+                <span className="inline-flex items-center px-4 bg-gray-200 text-gray-600 border border-r-0 border-gray-300 rounded-l-md text-lg">@</span>
+                <input
+                  type="text"
+                  value={creatorHandle}
+                  onChange={(e) => setCreatorHandle(e.target.value)}
+                  placeholder="username"
+                  className="flex-1 p-3 border border-gray-300 rounded-r text-lg"
+                />
+              </div>
+              <button
+                onClick={analyzeCreator}
+                disabled={isAnalyzing}
+                className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+              >
+                {isAnalyzing ? 'Analyzing...' : 'Analyze Creator'}
+              </button>
             </div>
           </div>
 
-          {/* Quality Rating Section */}
-          <div className="mt-6">
-            <h3 className="text-lg text-gray-700 mb-4">Influencer Quality Rating</h3>
-            <div className="space-y-4 bg-gradient-to-r from-green-50 via-yellow-50 to-red-50 p-6 rounded-lg">
-              {/* Green Rating */}
-              <div className="flex items-start space-x-3">
-                <input 
-                  type="radio" 
-                  id="green-rating" 
-                  name="qualityRating" 
-                  value="green" 
-                  checked={qualityRating === 'green'}
-                  onChange={(e) => setQualityRating(e.target.value)}
-                  className="mt-1"
-                />
-                <div className="flex-1">
-                  <label htmlFor="green-rating" className="flex items-center text-green-800 font-medium">
-                    <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                    GREEN: Recommended (+25% premium)
-                  </label>
-                  <ul className="mt-2 ml-5 text-sm text-gray-600 space-y-1">
-                    <li>• Engagement rate above 2% for accounts under 100K</li>
-                    <li>• Authentic comments showing real community</li>
-                    <li>• Content naturally aligns with cause marketing</li>
-                    <li>• Consistent, quality posting schedule</li>
-                    <li>• Previous cause-related content success</li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Amber Rating */}
-              <div className="flex items-start space-x-3">
-                <input 
-                  type="radio" 
-                  id="amber-rating" 
-                  name="qualityRating" 
-                  value="amber"
-                  checked={qualityRating === 'amber'}
-                  onChange={(e) => setQualityRating(e.target.value)}
-                  className="mt-1"
-                />
-                <div className="flex-1">
-                  <label htmlFor="amber-rating" className="flex items-center text-yellow-800 font-medium">
-                    <span className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>
-                    AMBER: Consider with Conditions (standard rate)
-                  </label>
-                  <ul className="mt-2 ml-5 text-sm text-gray-600 space-y-1">
-                    <li>• Engagement rate between 1-2% for smaller accounts</li>
-                    <li>• Mixed comment quality</li>
-                    <li>• Some content alignment but inconsistent</li>
-                    <li>• Irregular posting schedule</li>
-                    <li>• Limited cause-related content experience</li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Red Rating */}
-              <div className="flex items-start space-x-3">
-                <input 
-                  type="radio" 
-                  id="red-rating" 
-                  name="qualityRating" 
-                  value="red"
-                  checked={qualityRating === 'red'}
-                  onChange={(e) => setQualityRating(e.target.value)}
-                  className="mt-1"
-                />
-                <div className="flex-1">
-                  <label htmlFor="red-rating" className="flex items-center text-red-800 font-medium">
-                    <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
-                    RED: Not Recommended (25% discount)
-                  </label>
-                  <ul className="mt-2 ml-5 text-sm text-gray-600 space-y-1">
-                    <li>• Engagement rate below 1% for smaller accounts</li>
-                    <li>• Few or low-quality comments</li>
-                    <li>• Following count disproportionately high</li>
-                    <li>• No content related to causes or campaign themes</li>
-                    <li>• Sporadic posting or poor content quality</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Partnership Details Section */}
-        <div className="mb-8 border p-6 rounded-lg bg-white">
-          <h2 className="text-2xl font-light mb-6">Partnership Details</h2>
-          
           {/* Basic Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div>
@@ -213,37 +124,184 @@ function App() {
             </div>
           </div>
 
-          {/* Usage Rights */}
+          {/* Platform & Content Type */}
           <div className="mb-8">
-            <h3 className="text-lg text-gray-700 mb-4">Usage Rights</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center space-x-3">
+            <h3 className="text-lg font-medium text-gray-700 mb-4">Platform & Content Type</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 bg-white rounded-lg shadow-sm">
+                <h4 className="font-medium mb-3">Premium Tier</h4>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="contentType"
+                      value="instagram-video"
+                      checked={contentType === 'instagram-video'}
+                      onChange={(e) => setContentType(e.target.value)}
+                      className="mr-2"
+                    />
+                    Instagram Video
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="contentType"
+                      value="tiktok"
+                      checked={contentType === 'tiktok'}
+                      onChange={(e) => setContentType(e.target.value)}
+                      className="mr-2"
+                    />
+                    TikTok
+                  </label>
+                </div>
+              </div>
+              <div className="p-4 bg-white rounded-lg shadow-sm">
+                <h4 className="font-medium mb-3">Standard Tier</h4>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="contentType"
+                      value="youtube"
+                      checked={contentType === 'youtube'}
+                      onChange={(e) => setContentType(e.target.value)}
+                      className="mr-2"
+                    />
+                    YouTube
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="contentType"
+                      value="linkedin"
+                      checked={contentType === 'linkedin'}
+                      onChange={(e) => setContentType(e.target.value)}
+                      className="mr-2"
+                    />
+                    LinkedIn
+                  </label>
+                </div>
+              </div>
+              <div className="p-4 bg-white rounded-lg shadow-sm">
+                <h4 className="font-medium mb-3">Basic Tier</h4>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="contentType"
+                      value="facebook"
+                      checked={contentType === 'facebook'}
+                      onChange={(e) => setContentType(e.target.value)}
+                      className="mr-2"
+                    />
+                    Facebook
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="contentType"
+                      value="twitter"
+                      checked={contentType === 'twitter'}
+                      onChange={(e) => setContentType(e.target.value)}
+                      className="mr-2"
+                    />
+                    Twitter
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Content Duration */}
+          <div className="mb-8">
+            <label className="block text-gray-700 mb-2">
+              Content Duration: <span>{contentDuration}</span> seconds
+            </label>
+            <input
+              type="range"
+              min="10"
+              max="180"
+              value={contentDuration}
+              onChange={(e) => setContentDuration(Number(e.target.value))}
+              className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          {/* Industry Vertical */}
+          <div className="mb-8">
+            <label className="block text-gray-700 mb-2">Industry Vertical</label>
+            <select
+              value={industry}
+              onChange={(e) => setIndustry(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded text-lg bg-white"
+            >
+              <option value="fashion">Fashion ($18 CPM)</option>
+              <option value="beauty">Beauty ($20 CPM)</option>
+              <option value="fitness">Fitness ($15 CPM)</option>
+              <option value="food">Food & Beverage ($12 CPM)</option>
+              <option value="travel">Travel ($22 CPM)</option>
+              <option value="gaming">Gaming ($25 CPM)</option>
+              <option value="tech">Technology ($16 CPM)</option>
+              <option value="finance">Finance ($8 CPM)</option>
+              <option value="education">Education ($5 CPM)</option>
+              <option value="nonprofit">Non-Profit ($5 CPM)</option>
+            </select>
+          </div>
+
+          {/* Exclusivity Period */}
+          <div className="mb-8">
+            <label className="block text-gray-700 mb-2">Exclusivity Period</label>
+            <select
+              value={exclusivity}
+              onChange={(e) => setExclusivity(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded text-lg bg-white"
+            >
+              <option value="none">No Exclusivity</option>
+              <option value="30-day">30 Days (+10%)</option>
+              <option value="90-day">90 Days (+20%)</option>
+              <option value="180-day">180 Days (+30%)</option>
+              <option value="365-day">365 Days (+50%)</option>
+            </select>
+          </div>
+
+          {/* Usage Rights */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-700 mb-4">Usage Rights</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label className="flex items-center">
                 <input
                   type="checkbox"
-                  id="brandRepost"
                   checked={brandRepost}
                   onChange={(e) => setBrandRepost(e.target.checked)}
-                  className="w-5 h-5 text-indigo-600"
+                  className="mr-2 h-5 w-5"
                 />
-                <label htmlFor="brandRepost">Brand Repost (+10%)</label>
-              </div>
-              <div className="flex items-center space-x-3">
+                Brand Repost (+10%)
+              </label>
+              <label className="flex items-center">
                 <input
                   type="checkbox"
-                  id="paidAds"
                   checked={paidAds}
                   onChange={(e) => setPaidAds(e.target.checked)}
-                  className="w-5 h-5 text-indigo-600"
+                  className="mr-2 h-5 w-5"
                 />
-                <label htmlFor="paidAds">Paid Ads (+20%)</label>
-              </div>
+                Paid Ads (+20%)
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={website}
+                  onChange={(e) => setWebsite(e.target.checked)}
+                  className="mr-2 h-5 w-5"
+                />
+                Website Usage (+10%)
+              </label>
             </div>
           </div>
         </div>
 
         {/* Results Section */}
-        <div className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-100">
-          <h2 className="text-2xl font-light mb-4">Price Breakdown</h2>
+        <div className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
+          <h2 className="text-2xl font-light mb-6">Price Breakdown</h2>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Base Rate:</span>
@@ -251,16 +309,26 @@ function App() {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Quality Rating Adjustment:</span>
-              <span className="text-xl font-medium text-green-600">+25%</span>
+              <span className="text-xl font-medium text-green-600">
+                {qualityRating === 'green' ? '+25%' : qualityRating === 'red' ? '-25%' : '0%'}
+              </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Usage Rights:</span>
-              <span className="text-xl font-medium text-blue-600">+30%</span>
+              <span className="text-xl font-medium text-blue-600">
+                {((brandRepost ? 0.1 : 0) + (paidAds ? 0.2 : 0) + (website ? 0.1 : 0)) * 100}%
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Exclusivity:</span>
+              <span className="text-xl font-medium text-purple-600">
+                {EXCLUSIVITY_RATES[exclusivity] * 100}%
+              </span>
             </div>
             <div className="border-t border-indigo-200 pt-4 mt-4">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-medium">Final Price:</span>
-                <span className="text-2xl font-bold text-indigo-600">${finalPrice}</span>
+                <span className="text-2xl font-bold text-indigo-600">${finalPrice.toLocaleString()}</span>
               </div>
             </div>
           </div>
