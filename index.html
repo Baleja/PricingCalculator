@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Influencer Pricing Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-100">
+    <div class="mx-auto p-6 max-w-3xl bg-white">
+        <h1 class="text-3xl font-light text-gray-800 mb-6">Influencer Pricing Calculator</h1>
+        
+        <div class="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <p class="text-sm text-gray-700">
+                Welcome to the Universal Influencer Pricing Calculator 3.0, used for estimating fair compensation for influencer marketing. It will allow you to calculate the appropriate pricing based on multiple factors, with a clear breakdown of costs.
+                These calculations are based on standardized cause-based marketing evaluations, with a quality rating system that ensures you're paying appropriate rates based on engagement, authenticity, and content relevance. Please keep in mind they are only estimates, and we cannot be held responsible for any variations you may find when executing campaigns in the real world.
+            </p>
+        </div>
+
+        <!-- Creator Analysis Section -->
+        <div class="mb-8 border p-4 rounded-lg bg-indigo-50">
+            <h2 class="text-xl font-light mb-4">Creator Analysis</h2>
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <label class="block text-sm text-gray-600 mb-1">Enter Instagram Handle (@username)</label>
+                    <div class="flex">
+                        <span class="inline-flex items-center px-3 bg-gray-200 text-gray-600 border border-r-0 border-gray-300 rounded-l-md">@</span>
+                        <input type="text" id="creatorHandle" placeholder="username" class="flex-1 p-2 border border-gray-300 rounded-r">
+                    </div>
+                </div>
+                <div class="flex items-end">
+                    <button id="analyzeButton" class="p-2 px-4 rounded text-white bg-indigo-600 hover:bg-indigo-700">Analyze Creator</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Basic Metrics -->
+        <div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Follower Count</label>
+                <input type="number" id="followerCount" value="50000" class="w-full p-2 border border-gray-300 rounded">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Engagement Rate (%)</label>
+                <input type="number" id="engagementRate" value="3" step="0.1" class="w-full p-2 border border-gray-300 rounded">
+            </div>
+        </div>
+
+        <!-- Content Type Selection -->
+        <div class="mb-8">
+            <label class="block text-sm text-gray-600 mb-1">Platform & Content Type</label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="border rounded p-3 bg-gray-50">
+                    <h3 class="text-sm font-medium mb-2">Premium Tier</h3>
+                    <div class="space-y-2">
+                        <div>
+                            <input type="radio" name="contentType" value="instagram-video" checked class="mr-2">
+                            <label>Instagram Video</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="contentType" value="tiktok" class="mr-2">
+                            <label>TikTok</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="border rounded p-3 bg-gray-50">
+                    <h3 class="text-sm font-medium mb-2">Standard Tier</h3>
+                    <div class="space-y-2">
+                        <div>
+                            <input type="radio" name="contentType" value="youtube" class="mr-2">
+                            <label>YouTube</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="contentType" value="linkedin" class="mr-2">
+                            <label>LinkedIn</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="border rounded p-3 bg-gray-50">
+                    <h3 class="text-sm font-medium mb-2">Basic Tier</h3>
+                    <div class="space-y-2">
+                        <div>
+                            <input type="radio" name="contentType" value="facebook" class="mr-2">
+                            <label>Facebook</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="contentType" value="twitter" class="mr-2">
+                            <label>Twitter</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Duration -->
+        <div id="durationSection" class="mb-8">
+            <label class="block text-sm text-gray-600 mb-1">
+                Content Duration: <span id="durationDisplay">60</span> seconds
+            </label>
+            <input type="range" id="contentDuration" min="10" max="180" value="60" class="w-full">
+        </div>
+
+        <!-- Industry Selection -->
+        <div class="mb-8">
+            <label class="block text-sm text-gray-600 mb-1">Industry Vertical</label>
+            <select id="industry" class="w-full p-2 border border-gray-300 rounded bg-white">
+                <option value="fashion">Fashion ($18 CPM)</option>
+                <option value="beauty">Beauty ($20 CPM)</option>
+                <option value="fitness">Fitness ($15 CPM)</option>
+                <option value="food">Food & Beverage ($12 CPM)</option>
+                <option value="travel">Travel ($22 CPM)</option>
+                <option value="gaming">Gaming ($25 CPM)</option>
+                <option value="tech">Technology ($16 CPM)</option>
+                <option value="finance">Finance ($8 CPM)</option>
+                <option value="education">Education ($5 CPM)</option>
+                <option value="nonprofit">Non-Profit ($5 CPM)</option>
+            </select>
+        </div>
+
+        <!-- Exclusivity -->
+        <div class="mb-8">
+            <label class="block text-sm text-gray-600 mb-1">Exclusivity Period</label>
+            <select id="exclusivity" class="w-full p-2 border border-gray-300 rounded bg-white">
+                <option value="none">No Exclusivity</option>
+                <option value="30-day">30 Days (+10%)</option>
+                <option value="90-day">90 Days (+20%)</option>
+                <option value="180-day">180 Days (+30%)</option>
+                <option value="365-day">365 Days (+50%)</option>
+            </select>
+        </div>
+
+        <!-- Usage Rights -->
+        <div class="mb-8">
+            <label class="block text-sm text-gray-600 mb-1">Usage Rights</label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="flex items-center">
+                    <input type="checkbox" id="brandRepost" class="mr-2 h-4 w-4">
+                    <label for="brandRepost">Brand Repost (+10%)</label>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="paidAds" class="mr-2 h-4 w-4">
+                    <label for="paidAds">Paid Ads (+20%)</label>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="website" class="mr-2 h-4 w-4">
+                    <label for="website">Website Usage (+10%)</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quality Rating Section -->
+        <div class="mb-8 border p-4 rounded-lg bg-gradient-to-r from-green-50 via-yellow-50 to-red-50">
+            <label class="block text-sm text-gray-600 mb-3">Influencer Quality Rating</label>
+            <div class="flex flex-col gap-3">
+                <div class="flex items-center">
+                    <input type="radio" id="green-rating" name="qualityRating" value="green" checked class="mr-2 h-4 w-4 accent-green-600">
+                    <label for="green-rating" class="flex-1 text-green-800 font-medium">GREEN: Recommended (+25% premium)</label>
+                </div>
+                <div class="text-xs text-gray-600 ml-6 mt-1">
+                    <ul class="list-disc pl-5">
+                        <li>Engagement rate above 2% for accounts under 100K</li>
+                        <li>Authentic comments showing real community</li>
+                        <li>Content naturally aligns with cause marketing</li>
+                    </ul>
+                </div>
+                
+                <div class="flex items-center">
+                    <input type="radio" id="amber-rating" name="qualityRating" value="amber" class="mr-2 h-4 w-4 accent-yellow-600">
+                    <label for="amber-rating" class="flex-1 text-yellow-800 font-medium">AMBER: Consider with Conditions (standard rate)</label>
+                </div>
+                <div class="text-xs text-gray-600 ml-6 mt-1">
+                    <ul class="list-disc pl-5">
+                        <li>Engagement rate between 1-2% for smaller accounts</li>
+                        <li>Mixed comment quality</li>
+                        <li>Some content alignment but inconsistent</li>
+                    </ul>
+                </div>
+                
+                <div class="flex items-center">
+                    <input type="radio" id="red-rating" name="qualityRating" value="red" class="mr-2 h-4 w-4 accent-red-600">
+                    <label for="red-rating" class="flex-1 text-red-800 font-medium">RED: Not Recommended (25% discount)</label>
+                </div>
+                <div class="text-xs text-gray-600 ml-6 mt-1">
+                    <ul class="list-disc pl-5">
+                        <li>Engagement rate below 1% for smaller accounts</li>
+                        <li>Few or low-quality comments</li>
+                        <li>No content related to causes or campaign themes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-100 mb-8">
+            <div class="space-y-4">
+                <p class="text-lg font-medium">
+                    <strong>Brand receives:</strong> <span id="deliverablesCount">1</span> <span id="contentTypeDisplay">instagram video</span>
+                    with approximately <span id="followerDisplay">50,000</span> follower reach.
+                </p>
+                <p class="text-lg font-medium">
+                    <strong>Creator compensation:</strong> $<span id="finalPrice">0</span> for content creation, distribution, and associated rights.
+                </p>
+            </div>
+        </div>
+    </div>
+    <script src="calculator.js"></script>
+</body>
+</html> 
