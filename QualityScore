@@ -1,0 +1,757 @@
+<artifact>
+<title>Simple Influencer Calculator</title>
+<type>application/vnd.ant.react</type>
+undefined
+<content>import React, { useState, useEffect } from 'react';
+
+const SimpleCalculator = () => {
+  // Basic state
+  const [followerCount, setFollowerCount] = useState(50000);
+  const [engagementRate, setEngagementRate] = useState(3);
+  const [contentType, setContentType] = useState('instagram-video');
+  const [contentDuration, setContentDuration] = useState(60);
+  const [numDeliverables, setNumDeliverables] = useState(1);
+  const [exclusivity, setExclusivity] = useState('none');
+  const [usageRights, setUsageRights] = useState({
+    brandRepost: false,
+    paidAds: false,
+    website: false
+  });
+  const [industry, setIndustry] = useState('fashion');
+  const [qualityRating, setQualityRating] = useState('green');
+  
+  // Creator analysis state
+  const [creatorHandle, setCreatorHandle] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  
+  // Results state
+  const [baseRate, setBaseRate] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [finalPrice, setFinalPrice] = useState(0);
+  const [emv, setEmv] = useState(0);
+
+  // Platform base rates
+  const getBaseRate = () => {
+    let base;
+    
+    // Set initial platform rate
+    if (['instagram-video', 'tiktok'].includes(contentType)) {
+      base = 300; // Premium
+    } else if (['youtube', 'linkedin'].includes(contentType)) {
+      base = 150; // Standard
+    } else {
+      base = 100; // Basic
+    }
+    
+    // Apply follower count multiplier
+    if (followerCount >= 1000000) {
+      base *= 5;
+    } else if (followerCount >= 500000) {
+      base *= 3.5;
+    } else if (followerCount >= 100000) {
+      base *= 2.5;
+    } else if (followerCount >= 50000) {
+      base *= 1.5;
+    }
+    
+    // Apply engagement rate multiplier
+    base *= (1 + (Math.min(engagementRate, 15) / 10));
+    
+    // Apply quality rating factor
+    if (qualityRating === 'green') {
+      base *= 1.25; // Premium for highly recommended influencers
+    } else if (qualityRating === 'amber') {
+      base *= 1.0; // Standard rate for conditional influencers
+    } else if (qualityRating === 'red') {
+      base *= 0.75; // Discounted rate for not recommended influencers
+    }
+    
+    return Math.round(base);
+  };
+  
+  // Analyze creator function
+  const analyzeCreator = (handle) => {
+    setIsAnalyzing(true);
+    
+    // Simulate API delay
+    setTimeout(() => {
+      try {
+        // Simple algorithm to generate pseudo-random but consistent data
+        const hashCode = handle.split('').reduce((a, b) => {
+          a = ((a << 5) - a) + b.charCodeAt(0);
+          return a & a;
+        }, 0);
+        
+        const seed = Math.abs(hashCode) / 2147483647;
+        
+        const followers = Math.floor(seed * 900000) + 10000;
+        const fakeFollowerPercent = Math.min(Math.floor(seed * 60), 55);
+        const realFollowers = Math.round(followers * (1 - (fakeFollowerPercent / 100)));
+        const engRate = (seed * 5) + 0.5;
+        const avgLikes = Math.round(followers * (engRate / 100));
+        const avgComments = Math.round(avgLikes * 0.05);
+        
+        // Determine quality rating
+        let rating;
+        if (engRate > 2 && fakeFollowerPercent < 25) {
+          rating = 'green';
+        } else if (engRate > 1 && fakeFollowerPercent < 40) {
+          rating = 'amber';
+        } else {
+          rating = 'red';
+        }
+        
+        const result = {
+          handle,
+          followers,
+          fakeFollowerPercent,
+          realFollowers,
+          engagementRate: engRate.toFixed(2),
+          averageLikes: avgLikes,
+          averageComments: avgComments,
+          qualityRating: rating,
+          lastUpdated: new Date().toLocaleDateString()
+        };
+        
+        setAnalysisResult(result);
+        setFollowerCount(realFollowers);
+        setEngagementRate(parseFloat(engRate.toFixed(1)));
+        setQualityRating(rating);
+      } catch (error) {
+        console.error("Error analyzing creator:", error);
+        alert("Error analyzing creator profile. Please try again later.");
+      } finally {
+        setIsAnalyzing(false);
+      }
+    }, 1500);
+  };
+
+  // Industry CPM rates
+  const industryCpmRates = {
+    'fashion': 18,
+    'beauty': 20,
+    'fitness': 15,
+    'food': 12,
+    'travel': 22,
+    'gaming': 25,
+    'tech': 16,
+    'finance': 8,
+    'education': 5,
+    'nonprofit': 5
+  };
+  
+  // Exclusivity premiums
+  const exclusivityRates = {
+    'none': 0,
+    '30-day': 0.1,
+    '90-day': 0.2,
+    '180-day': 0.3,
+    '365-day': 0.5
+  };
+
+  // Calculate prices and EMV
+  useEffect(() => {
+    // Calculate base rate
+    const calculatedBaseRate = getBaseRate();
+    setBaseRate(calculatedBaseRate);
+    
+    // Apply duration modifier
+    let calculatedPrice = calculatedBaseRate;
+    if (contentType.includes('video') || contentType === 'tiktok' || contentType === 'youtube') {
+      if (contentType === 'youtube') {
+        if (contentDuration > 300) calculatedPrice *= 2;
+        else if (contentDuration > 60) calculatedPrice *= 1.5;
+      } else {
+        if (contentDuration > 60) calculatedPrice *= 1.5;
+        else if (contentDuration < 30) calculatedPrice *= 0.8;
+      }
+    }
+    
+    // Add usage rights fees
+    if (usageRights.brandRepost) calculatedPrice += calculatedBaseRate * 0.1;
+    if (usageRights.paidAds) calculatedPrice += calculatedBaseRate * 0.2;
+    if (usageRights.website) calculatedPrice += calculatedBaseRate * 0.1;
+    
+    // Add exclusivity premium
+    calculatedPrice += calculatedBaseRate * (exclusivityRates[exclusivity] || 0);
+    
+    // Apply multiple deliverables with volume discount
+    if (numDeliverables > 1) {
+      const additionalCost = calculatedPrice * (numDeliverables - 1) * 0.9;
+      calculatedPrice += additionalCost;
+    }
+    
+    setTotalPrice(calculatedPrice);
+    
+    // Round up for contract simplicity
+    let rounded = calculatedPrice;
+    if (calculatedPrice < 500) {
+      rounded = Math.ceil(calculatedPrice / 25) * 25;
+    } else if (calculatedPrice < 2000) {
+      rounded = Math.ceil(calculatedPrice / 50) * 50;
+    } else {
+      rounded = Math.ceil(calculatedPrice / 100) * 100;
+    }
+    
+    setFinalPrice(rounded);
+    
+    // Calculate EMV
+    const reachRate = contentType === 'youtube' ? 0.3 : 
+                     contentType === 'tiktok' ? 0.4 : 0.2;
+    const engagementMultiplier = 1 + (Math.min(engagementRate, 15) / 5);
+    const estimatedReach = followerCount * reachRate * engagementMultiplier;
+    const industryRate = industryCpmRates[industry] || 10;
+    
+    setEmv(estimatedReach * (industryRate / 1000));
+  }, [
+    followerCount, 
+    engagementRate, 
+    contentType, 
+    contentDuration, 
+    numDeliverables, 
+    exclusivity, 
+    usageRights,
+    industry,
+    qualityRating
+  ]);
+
+  // Helper for duration display
+  const formatDuration = (seconds) => {
+    if (seconds < 60) return `${seconds} seconds`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')} minutes`;
+  };
+
+  return (
+    <div className="mx-auto p-6 max-w-3xl bg-white">
+      <h1 className="text-3xl font-light text-gray-800 mb-6">Influencer Pricing Calculator</h1>
+      
+      <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+        <p className="text-sm text-gray-700">
+          Welcome to the Universal Influencer Pricing Calculator 3.0, used for estimating fair compensation for influencer marketing. It will allow you to calculate the appropriate pricing based on multiple factors, with a clear breakdown of costs.
+          These calculations are based on standardized cause-based marketing evaluations, with a quality rating system that ensures you're paying appropriate rates based on engagement, authenticity, and content relevance. Please keep in mind they are only estimates, and we cannot be held responsible for any variations you may find when executing campaigns in the real world.
+        </p>
+      </div>
+      
+      {/* Creator Analysis Section */}
+      <div className="mb-8 border p-4 rounded-lg bg-indigo-50">
+        <h2 className="text-xl font-light mb-4">Creator Analysis</h2>
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <label className="block text-sm text-gray-600 mb-1">Enter Instagram Handle (@username)</label>
+            <div className="flex">
+              <span className="inline-flex items-center px-3 bg-gray-200 text-gray-600 border border-r-0 border-gray-300 rounded-l-md">
+                @
+              </span>
+              <input 
+                type="text" 
+                value={creatorHandle} 
+                onChange={(e) => setCreatorHandle(e.target.value)}
+                placeholder="username" 
+                className="flex-1 p-2 border border-gray-300 rounded-r"
+              />
+            </div>
+          </div>
+          <div className="flex items-end">
+            <button 
+              onClick={() => analyzeCreator(creatorHandle)}
+              disabled={isAnalyzing || !creatorHandle}
+              className={`p-2 px-4 rounded text-white ${isAnalyzing || !creatorHandle ? 'bg-gray-400' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+            >
+              {isAnalyzing ? 'Analyzing...' : 'Analyze Creator'}
+            </button>
+          </div>
+        </div>
+        
+        <div className="mt-3 text-xs text-indigo-700 bg-indigo-100 p-2 rounded">
+          <div className="flex items-start gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <strong>API Integration:</strong> In production, this tool would connect to the Influencer Club API or similar service to pull real-time influencer data. Currently showing simulated data for demonstration purposes. 
+              <a href="#" className="underline ml-1">Learn more about API setup</a>
+            </div>
+          </div>
+        </div>
+        
+        {analysisResult && (
+          <div className="mt-4 p-4 bg-white rounded-lg border border-indigo-100">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-medium">@{analysisResult.handle}</h3>
+              <span className="text-xs text-gray-500">Last updated: {analysisResult.lastUpdated}</span>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              <div className="bg-gray-50 p-3 rounded">
+                <div className="text-xs text-gray-500">Total Followers</div>
+                <div className="text-lg font-medium">{analysisResult.followers.toLocaleString()}</div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded">
+                <div className="text-xs text-gray-500">Fake Followers</div>
+                <div className={`text-lg font-medium ${analysisResult.fakeFollowerPercent > 30 ? 'text-red-600' : analysisResult.fakeFollowerPercent > 20 ? 'text-yellow-600' : 'text-green-600'}`}>
+                  {analysisResult.fakeFollowerPercent}%
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded">
+                <div className="text-xs text-gray-500">Real Followers</div>
+                <div className="text-lg font-medium">{analysisResult.realFollowers.toLocaleString()}</div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded">
+                <div className="text-xs text-gray-500">Engagement Rate</div>
+                <div className={`text-lg font-medium ${analysisResult.engagementRate < 1 ? 'text-red-600' : analysisResult.engagementRate < 2 ? 'text-yellow-600' : 'text-green-600'}`}>
+                  {analysisResult.engagementRate}%
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3 pt-2 border-t">
+              <div className="text-sm">Quality Rating:</div>
+              <div className={`px-3 py-1 rounded-full text-sm text-white ${
+                analysisResult.qualityRating === 'green' ? 'bg-green-600' : 
+                analysisResult.qualityRating === 'amber' ? 'bg-yellow-600' : 'bg-red-600'
+              }`}>
+                {analysisResult.qualityRating.toUpperCase()}
+              </div>
+              <div className="text-xs text-gray-500 ml-auto">
+                Values have been applied to the calculator below
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Influencer Quality Rating */}
+        <div className="mt-5 border p-4 rounded-lg bg-gradient-to-r from-green-50 via-yellow-50 to-red-50">
+          <label className="block text-sm text-gray-600 mb-3">Influencer Quality Rating</label>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center">
+              <input
+                type="radio"
+                id="green-rating"
+                name="qualityRating"
+                value="green"
+                checked={qualityRating === 'green'}
+                onChange={(e) => setQualityRating(e.target.value)}
+                className="mr-2 h-4 w-4 accent-green-600"
+              />
+              <label htmlFor="green-rating" className="flex-1 text-green-800 font-medium">GREEN: Recommended (+25% premium)</label>
+            </div>
+            <div className="text-xs text-gray-600 ml-6 mt-1">
+              <ul className="list-disc pl-5">
+                <li>Engagement rate above 2% for accounts under 100K</li>
+                <li>Authentic comments showing real community</li>
+                <li>Content naturally aligns with cause marketing</li>
+                <li>Consistent, quality posting schedule</li>
+                <li>Previous cause-related content success</li>
+              </ul>
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="radio"
+                id="amber-rating"
+                name="qualityRating"
+                value="amber"
+                checked={qualityRating === 'amber'}
+                onChange={(e) => setQualityRating(e.target.value)}
+                className="mr-2 h-4 w-4 accent-yellow-600"
+              />
+              <label htmlFor="amber-rating" className="flex-1 text-yellow-800 font-medium">AMBER: Consider with Conditions (standard rate)</label>
+            </div>
+            <div className="text-xs text-gray-600 ml-6 mt-1">
+              <ul className="list-disc pl-5">
+                <li>Engagement rate between 1-2% for smaller accounts</li>
+                <li>Mixed comment quality</li>
+                <li>Some content alignment but inconsistent</li>
+                <li>Irregular posting schedule</li>
+                <li>Limited cause-related content experience</li>
+              </ul>
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="radio"
+                id="red-rating"
+                name="qualityRating"
+                value="red"
+                checked={qualityRating === 'red'}
+                onChange={(e) => setQualityRating(e.target.value)}
+                className="mr-2 h-4 w-4 accent-red-600"
+              />
+              <label htmlFor="red-rating" className="flex-1 text-red-800 font-medium">RED: Not Recommended (25% discount)</label>
+            </div>
+            <div className="text-xs text-gray-600 ml-6 mt-1">
+              <ul className="list-disc pl-5">
+                <li>Engagement rate below 1% for smaller accounts</li>
+                <li>Few or low-quality comments</li>
+                <li>Following count disproportionately high</li>
+                <li>No content related to causes or campaign themes</li>
+                <li>Sporadic posting or poor content quality</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">Follower Count</label>
+          <input 
+            type="number" 
+            value={followerCount} 
+            onChange={(e) => setFollowerCount(Number(e.target.value))}
+            className="w-full p-2 border border-gray-300 rounded"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">Engagement Rate (%)</label>
+          <input 
+            type="number" 
+            value={engagementRate} 
+            onChange={(e) => setEngagementRate(Number(e.target.value))}
+            step="0.1"
+            className="w-full p-2 border border-gray-300 rounded"
+          />
+        </div>
+      </div>
+      
+      <div className="mb-8">
+        <label className="block text-sm text-gray-600 mb-1">Platform & Content Type</label>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="border rounded p-3 bg-gray-50">
+            <h3 className="text-sm font-medium mb-2">Premium Tier</h3>
+            <div className="space-y-2">
+
+              <div>
+                <input
+                  type="radio"
+                  id="instagram-video"
+                  name="contentType"
+                  value="instagram-video"
+                  checked={contentType === 'instagram-video'}
+                  onChange={(e) => setContentType(e.target.value)}
+                  className="mr-2"
+                />
+                <label htmlFor="instagram-video">Instagram Video</label>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  id="tiktok"
+                  name="contentType"
+                  value="tiktok"
+                  checked={contentType === 'tiktok'}
+                  onChange={(e) => setContentType(e.target.value)}
+                  className="mr-2"
+                />
+                <label htmlFor="tiktok">TikTok</label>
+              </div>
+            </div>
+          </div>
+          
+          <div className="border rounded p-3 bg-gray-50">
+            <h3 className="text-sm font-medium mb-2">Standard Tier</h3>
+            <div className="space-y-2">
+              <div>
+                <input
+                  type="radio"
+                  id="youtube"
+                  name="contentType"
+                  value="youtube"
+                  checked={contentType === 'youtube'}
+                  onChange={(e) => setContentType(e.target.value)}
+                  className="mr-2"
+                />
+                <label htmlFor="youtube">YouTube</label>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  id="linkedin"
+                  name="contentType"
+                  value="linkedin"
+                  checked={contentType === 'linkedin'}
+                  onChange={(e) => setContentType(e.target.value)}
+                  className="mr-2"
+                />
+                <label htmlFor="linkedin">LinkedIn</label>
+              </div>
+            </div>
+          </div>
+          
+          <div className="border rounded p-3 bg-gray-50">
+            <h3 className="text-sm font-medium mb-2">Basic Tier</h3>
+            <div className="space-y-2">
+              <div>
+                <input
+                  type="radio"
+                  id="facebook"
+                  name="contentType"
+                  value="facebook"
+                  checked={contentType === 'facebook'}
+                  onChange={(e) => setContentType(e.target.value)}
+                  className="mr-2"
+                />
+                <label htmlFor="facebook">Facebook</label>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  id="twitter"
+                  name="contentType"
+                  value="twitter"
+                  checked={contentType === 'twitter'}
+                  onChange={(e) => setContentType(e.target.value)}
+                  className="mr-2"
+                />
+                <label htmlFor="twitter">Twitter</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {(contentType.includes('video') || contentType === 'tiktok' || contentType === 'youtube') && (
+        <div className="mb-8">
+          <label className="block text-sm text-gray-600 mb-1">
+            Content Duration: {contentDuration} seconds
+            {contentDuration >= 60 && 
+              ` (${Math.floor(contentDuration/60)}:${(contentDuration%60).toString().padStart(2, '0')})`}
+          </label>
+          <input 
+            type="range" 
+            min={contentType === 'youtube' ? 30 : 10}
+            max={contentType === 'youtube' ? 900 : 180}
+            value={contentDuration} 
+            onChange={(e) => setContentDuration(Number(e.target.value))}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          />
+        </div>
+      )}
+      
+      {/* Deal Structure */}
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">Number of Deliverables</label>
+          <input
+            type="number"
+            min="1"
+            max="10"
+            value={numDeliverables}
+            onChange={(e) => setNumDeliverables(Math.max(1, Number(e.target.value)))}
+            className="w-full p-2 border border-gray-300 rounded"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">Exclusivity Period</label>
+          <select 
+            value={exclusivity}
+            onChange={(e) => setExclusivity(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded bg-white"
+          >
+            <option value="none">No Exclusivity</option>
+            <option value="30-day">30 Days (+10%)</option>
+            <option value="90-day">90 Days (+20%)</option>
+            <option value="180-day">180 Days (+30%)</option>
+            <option value="365-day">365 Days (+50%)</option>
+          </select>
+        </div>
+      </div>
+      
+      {/* Usage Rights */}
+      <div className="mb-8">
+        <label className="block text-sm text-gray-600 mb-1">Usage Rights</label>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="brandRepost"
+              checked={usageRights.brandRepost}
+              onChange={(e) => setUsageRights({...usageRights, brandRepost: e.target.checked})}
+              className="mr-2 h-4 w-4"
+            />
+            <label htmlFor="brandRepost">Brand Repost (+10%)</label>
+          </div>
+          
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="paidAds"
+              checked={usageRights.paidAds}
+              onChange={(e) => setUsageRights({...usageRights, paidAds: e.target.checked})}
+              className="mr-2 h-4 w-4"
+            />
+            <label htmlFor="paidAds">Paid Ads (+20%)</label>
+          </div>
+          
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="website"
+              checked={usageRights.website}
+              onChange={(e) => setUsageRights({...usageRights, website: e.target.checked})}
+              className="mr-2 h-4 w-4"
+            />
+            <label htmlFor="website">Website Usage (+10%)</label>
+          </div>
+        </div>
+      </div>
+      
+      {/* EMV Section */}
+      <div className="mb-8">
+        <label className="block text-sm text-gray-600 mb-1">Industry Vertical (for EMV)</label>
+        <select
+          value={industry}
+          onChange={(e) => setIndustry(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded bg-white"
+        >
+          <option value="fashion">Fashion ($18 CPM)</option>
+          <option value="beauty">Beauty ($20 CPM)</option>
+          <option value="fitness">Fitness ($15 CPM)</option>
+          <option value="food">Food & Beverage ($12 CPM)</option>
+          <option value="travel">Travel ($22 CPM)</option>
+          <option value="gaming">Gaming ($25 CPM)</option>
+          <option value="tech">Technology ($16 CPM)</option>
+          <option value="finance">Finance ($8 CPM)</option>
+          <option value="education">Education ($5 CPM)</option>
+          <option value="nonprofit">Non-Profit ($5 CPM)</option>
+        </select>
+      </div>
+      
+      {/* Deal Summary */}
+      <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-100 mb-8">
+        <div className="space-y-4">
+          <p className="text-lg font-medium">
+            <strong>Brand receives:</strong> {numDeliverables} {contentType.replace('-', ' ')} 
+            {(contentType.includes('video') || contentType === 'tiktok' || contentType === 'youtube') 
+              ? ` (${formatDuration(contentDuration)})` 
+              : ''} 
+            with approximately {followerCount.toLocaleString()} follower reach.
+          </p>
+          
+          <p className="text-lg font-medium">
+            <strong>Creator compensation:</strong> ${finalPrice.toFixed(0)} for content creation, distribution, and associated rights.
+          </p>
+          
+          <div className="mt-3 p-3 bg-blue-100 rounded">
+            <p className="text-blue-800 font-medium">
+              <strong>ROI Analysis:</strong> This collaboration represents {Math.round((emv / finalPrice) * 100)}% return on investment
+              (${Math.round(emv).toLocaleString()} EMV for ${finalPrice.toFixed(0)} investment).
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      {/* Creator Requirements */}
+      <div className="mb-8 border-t border-gray-200 pt-6">
+        <h2 className="text-xl font-light mb-4">Influencer Requirements</h2>
+        
+        <div className="bg-gray-50 p-6 rounded">
+          <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
+            <li>Create {numDeliverables} {contentType.replace('-', ' ')} featuring the product/service</li>
+            {(contentType.includes('video') || contentType === 'tiktok' || contentType === 'youtube') && (
+              <li>Video content should be {formatDuration(contentDuration)} with clear product visibility</li>
+            )}
+            {exclusivity !== 'none' && (
+              <li>Maintain {exclusivity.replace('-', ' ')} exclusivity (no competing products/brands)</li>
+            )}
+            {usageRights.brandRepost && (
+              <li>Grant permission for brand to repost content on their social channels</li>
+            )}
+            {usageRights.paidAds && (
+              <li>Provide rights for content to be used in brand's paid advertising</li>
+            )}
+            {usageRights.website && (
+              <li>Allow content to be featured on brand's website</li>
+            )}
+            <li>Include proper disclosure of sponsored content (e.g., #ad)</li>
+            <li>Submit content for approval before publishing</li>
+            <li>Provide performance metrics 7 days after posting</li>
+          </ul>
+        </div>
+      </div>
+      
+      {/* Price Breakdown */}
+      <div className="mb-8 border-t border-gray-200 pt-6">
+        <h2 className="text-xl font-light mb-4">Price Breakdown</h2>
+        
+        <div className="bg-gray-50 p-6 rounded">
+          <div className="flex justify-between py-2 border-b">
+            <span>Platform:</span>
+            <span className="font-medium">{contentType.replace('-', ' ')}</span>
+          </div>
+          <div className="flex justify-between py-2 border-b">
+            <span>Base Rate (followers + engagement):</span>
+            <span className="font-medium">${baseRate}</span>
+          </div>
+          
+          <div className="flex justify-between py-2 border-b">
+            <span>Quality Rating Adjustment:</span>
+            <span className="font-medium">
+              {qualityRating === 'green' ? '+25%' : qualityRating === 'amber' ? '0%' : '-25%'}
+              <span className="ml-2 text-xs">
+                ({qualityRating.toUpperCase()})
+              </span>
+            </span>
+          </div>
+          
+          {(contentType.includes('video') || contentType === 'tiktok' || contentType === 'youtube') && (
+            <div className="flex justify-between py-2 border-b">
+              <span>Duration Adjustment:</span>
+              <span className="font-medium">
+                {contentType === 'youtube' && contentDuration > 300 ? '+100%' : 
+                 contentType === 'youtube' && contentDuration > 60 ? '+50%' :
+                 contentDuration > 60 ? '+50%' :
+                 contentDuration < 30 ? '-20%' : '0%'}
+              </span>
+            </div>
+          )}
+          
+          {exclusivity !== 'none' && (
+            <div className="flex justify-between py-2 border-b">
+              <span>Exclusivity Premium:</span>
+              <span className="font-medium">+{exclusivityRates[exclusivity] * 100}%</span>
+            </div>
+          )}
+          
+          {(usageRights.brandRepost || usageRights.paidAds || usageRights.website) && (
+            <div className="flex justify-between py-2 border-b">
+              <span>Usage Rights:</span>
+              <span className="font-medium">
+                +{((usageRights.brandRepost ? 0.1 : 0) + 
+                   (usageRights.paidAds ? 0.2 : 0) + 
+                   (usageRights.website ? 0.1 : 0)) * 100}%
+              </span>
+            </div>
+          )}
+          
+          {numDeliverables > 1 && (
+            <div className="flex justify-between py-2 border-b">
+              <span>Multiple Deliverables:</span>
+              <span className="font-medium">{numDeliverables}× (with volume discount)</span>
+            </div>
+          )}
+          
+          <div className="flex justify-between py-2 border-b">
+            <span>Calculated Price:</span>
+            <span className="font-medium">${totalPrice.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between py-3 bg-purple-50 rounded mt-3">
+            <span className="font-medium">Final Contract Price:</span>
+            <span className="font-bold text-purple-800">${finalPrice.toFixed(0)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SimpleCalculator;</content>
+</artifact>
